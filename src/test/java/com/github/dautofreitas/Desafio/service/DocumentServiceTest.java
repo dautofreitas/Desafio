@@ -1,27 +1,27 @@
 package com.github.dautofreitas.Desafio.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.any;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.BDDMockito;
 import org.mockito.Mockito;
-import org.mockito.stubbing.OngoingStubbing;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.github.dautofreitas.desafio.domain.entity.Document;
 import com.github.dautofreitas.desafio.domain.repository.DocumentRepository;
-import com.github.dautofreitas.desafio.service.DocumentService;
 import com.github.dautofreitas.desafio.service.impl.DocumentServiceImpl;
 
+@TestMethodOrder(OrderAnnotation.class)
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
 public class DocumentServiceTest {
@@ -35,7 +35,7 @@ public class DocumentServiceTest {
 	public void setUp() {
 		documentService = new DocumentServiceImpl(documentRepository);
 	}
-
+	@Order(1)
 	@Test
 	@DisplayName("Deve salvar Documento")
 	public void saveDocument() {
@@ -52,7 +52,7 @@ public class DocumentServiceTest {
 		assertThat(savedDocumentDto.getIdFile()).isEqualTo(1);
 
 	}
-
+	@Order(2)
 	@Test
 	@DisplayName("Deve informar que documentos são iguais")
 	public void DiffDocumentEquals() {
@@ -70,7 +70,7 @@ public class DocumentServiceTest {
 		assertThat(result).isEqualTo(String.format("Documentos %s idênticos", documentRight.getIdFile()));
 
 	}
-
+	@Order(3)
 	@SuppressWarnings("unchecked")
 	@Test
 	@DisplayName("Deve informar que tamanho dos documentos são diferentes")
@@ -86,7 +86,7 @@ public class DocumentServiceTest {
 
 	}
 
-	
+	@Order(4)
 	@SuppressWarnings("unchecked")
 	@Test
 	@DisplayName("Deve informar que documentos são diferentes na posição")
@@ -106,10 +106,11 @@ public class DocumentServiceTest {
 				String.format("Documentos %s diferentes na posição %s", documentRight.getIdFile(), diferrentIdex));
 
 	}
-
+	@Order(5)
 	@Test
-	@DisplayName("Deve verificar se dois Arrays de Bytes são iguais")
+	@DisplayName("Deve testar se dois Arrays de Bytes iguais")
 	public void verifyMatchingBetweenTowByteArray() throws Exception, SecurityException {
+		
 		// cenário
 
 		byte[] byteArrayFist = new byte[] { 23, 23, 44 };
@@ -122,6 +123,31 @@ public class DocumentServiceTest {
 		// execução
 
 		int result = (int) method.invoke(documentService, byteArrayFist, byteArraySecund);
+		
+		
+		// verificação
+
+		assertThat(result).isEqualTo(-1);
+
+	}
+	@Order(6)
+	@Test
+	@DisplayName("Deve verificar se dois Arrays de Bytes diferente")
+	public void verifyMatchingBetweenTowByteArrayDifferent() throws Exception, SecurityException {
+		// cenário
+
+		byte[] byteArrayFist = new byte[] { 23, 23, 44 };
+		byte[] byteArraySecund = new byte[] { 23, 23, 44 };
+
+		Method method = DocumentServiceImpl.class.getDeclaredMethod("verifyMatchingBetweenTowByteArray", byte[].class,
+				byte[].class);
+		method.setAccessible(true);
+
+		// execução
+
+		int result = (int) method.invoke(documentService, byteArrayFist, byteArraySecund);
+		
+		
 		// verificação
 
 		assertThat(result).isEqualTo(-1);

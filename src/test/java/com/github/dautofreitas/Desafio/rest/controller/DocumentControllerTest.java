@@ -1,6 +1,6 @@
 package com.github.dautofreitas.Desafio.rest.controller;
 
-import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.shadow.com.univocity.parsers.annotations.FixedWidth;
 import org.mockito.BDDMockito;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,9 +72,28 @@ public class DocumentControllerTest {
 	@Order(2)
 	@Test
 	@DisplayName("Não deve criar documento Left")
-	public void createIvalidDocumentLeft()
+	public void createIvalidDocumentLeft() throws Exception
 	{
+		Integer idFile = 1;
+		DocumentDTO newDocumentDto = new DocumentDTO();
 		
+		/*Document savedDocument = new Document(1,idFile,new byte[] {10,32,44},"left");
+		
+		BDDMockito.given(documentService.save(Mockito.any(Document.class))).willReturn(savedDocument);
+		*/
+		String objectJason = new ObjectMapper().writeValueAsString(newDocumentDto);
+		
+		
+		MockHttpServletRequestBuilder request =  MockMvcRequestBuilders
+				.post(DOCUMENT_API + idFile+"/left/")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON)	
+				.content(objectJason);
+		
+		mvc.perform(request).andExpect(status().isBadRequest())
+							.andExpect(jsonPath("type").value("erro"))
+							.andExpect(jsonPath("messages[0]").value("A propriedade file não pode ser nula")); 
+							
 	}
 	@Order(3)
 	@Test
@@ -95,7 +113,7 @@ public class DocumentControllerTest {
 		MockHttpServletRequestBuilder request =  MockMvcRequestBuilders
 				.post(DOCUMENT_API + idFile+"/right/")
 				.contentType(MediaType.APPLICATION_JSON)
-				.accept(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON)				
 				.content(objectJason);
 		
 		mvc.perform(request).andExpect(status().isCreated())
@@ -111,4 +129,6 @@ public class DocumentControllerTest {
 	{
 		
 	}
+	
+	
 }
