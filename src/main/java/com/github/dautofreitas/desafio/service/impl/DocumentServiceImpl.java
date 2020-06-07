@@ -21,6 +21,10 @@ public class DocumentServiceImpl implements DocumentService {
 	
 	public Document save(Document document) {
 		
+		documentRepository.findBySideAndIdFile(document.getSide(), document.getIdFile()).ifPresent(documentFound -> {
+			throw new BisnessRuleExeption(String.format("Documento id: %s e lado: %s já existente", documentFound.getIdFile(), documentFound.getSide()));
+		});		
+		
 		return documentRepository.save(document);
 		
 	}	
@@ -39,7 +43,7 @@ public class DocumentServiceImpl implements DocumentService {
 								.orElseThrow(() -> new BisnessRuleExeption(String.format("Documento com Id: %s e lado: right não encontrado",idFile)));
 		
 		Document documentLeft = documentRepository.findBySideAndIdFile("left", idFile)
-				.orElseThrow(() -> new BisnessRuleExeption(String.format("Documento com Id: %s e lado:left não encontrado",idFile))); 
+				.orElseThrow(() -> new BisnessRuleExeption(String.format("Documento com Id: %s e lado: left não encontrado",idFile))); 
 		
 		if (documentRight.getFile().length != documentLeft.getFile().length )
 		{

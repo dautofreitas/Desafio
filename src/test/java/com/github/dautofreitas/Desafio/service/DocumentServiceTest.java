@@ -1,10 +1,13 @@
 package com.github.dautofreitas.Desafio.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
@@ -19,6 +22,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.github.dautofreitas.desafio.domain.entity.Document;
 import com.github.dautofreitas.desafio.domain.repository.DocumentRepository;
+import com.github.dautofreitas.desafio.exception.BisnessRuleExeption;
 import com.github.dautofreitas.desafio.service.impl.DocumentServiceImpl;
 
 @TestMethodOrder(OrderAnnotation.class)
@@ -35,6 +39,7 @@ public class DocumentServiceTest {
 	public void setUp() {
 		documentService = new DocumentServiceImpl(documentRepository);
 	}
+
 	@Order(1)
 	@Test
 	@DisplayName("Deve salvar Documento")
@@ -52,7 +57,27 @@ public class DocumentServiceTest {
 		assertThat(savedDocumentDto.getIdFile()).isEqualTo(1);
 
 	}
+
 	@Order(2)
+	@Test
+	@DisplayName("Não deve salvar Documento já existente")
+	public void notSaveDocument() {
+		
+		Document documentFound = new Document(null, 1, new byte[] { 23, 23, 44 }, "left");		
+		String message = String.format("Documento id: %s e lado: %s já existente", documentFound.getIdFile(), documentFound.getSide());
+		
+		Mockito.when(documentRepository.findBySideAndIdFile(Mockito.anyString(), Mockito.anyInt()))
+				.thenReturn(Optional.of(documentFound));
+
+		// Execução
+		BisnessRuleExeption thrown = assertThrows(BisnessRuleExeption.class, () -> documentService.save(documentFound));
+		
+		// Verificação
+		assertThat(thrown.getMessage()).isEqualTo(message);
+
+	}
+
+	@Order(3)
 	@Test
 	@DisplayName("Deve informar que documentos são iguais")
 	public void DiffDocumentEquals() {
@@ -70,7 +95,8 @@ public class DocumentServiceTest {
 		assertThat(result).isEqualTo(String.format("Documentos %s idênticos", documentRight.getIdFile()));
 
 	}
-	@Order(3)
+
+	@Order(4)
 	@SuppressWarnings("unchecked")
 	@Test
 	@DisplayName("Deve informar que tamanho dos documentos são diferentes")
@@ -86,7 +112,7 @@ public class DocumentServiceTest {
 
 	}
 
-	@Order(4)
+	@Order(5)
 	@SuppressWarnings("unchecked")
 	@Test
 	@DisplayName("Deve informar que documentos são diferentes na posição")
@@ -94,11 +120,9 @@ public class DocumentServiceTest {
 		Document documentRight = new Document(1, 1, new byte[] { 23, 23, 44 }, "right");
 		Document documentLeft = new Document(1, 1, new byte[] { 23, 23, 46 }, "left");
 		int diferrentIdex = 2;
-		
-	
+
 		Mockito.when(documentRepository.findBySideAndIdFile(Mockito.any(String.class), Mockito.any(Integer.class)))
 				.thenReturn(Optional.ofNullable(documentRight), Optional.ofNullable(documentLeft));
-
 
 		String result = documentService.documentDiff(1);
 
@@ -106,11 +130,12 @@ public class DocumentServiceTest {
 				String.format("Documentos %s diferentes na posição %s", documentRight.getIdFile(), diferrentIdex));
 
 	}
-	@Order(5)
+
+	@Order(6)
 	@Test
 	@DisplayName("Deve testar se dois Arrays de Bytes iguais")
 	public void verifyMatchingBetweenTowByteArray() throws Exception, SecurityException {
-		
+
 		// cenário
 
 		byte[] byteArrayFist = new byte[] { 23, 23, 44 };
@@ -123,14 +148,14 @@ public class DocumentServiceTest {
 		// execução
 
 		int result = (int) method.invoke(documentService, byteArrayFist, byteArraySecund);
-		
-		
+
 		// verificação
 
 		assertThat(result).isEqualTo(-1);
 
 	}
-	@Order(6)
+
+	@Order(7)
 	@Test
 	@DisplayName("Deve verificar se dois Arrays de Bytes diferente")
 	public void verifyMatchingBetweenTowByteArrayDifferent() throws Exception, SecurityException {
@@ -146,11 +171,50 @@ public class DocumentServiceTest {
 		// execução
 
 		int result = (int) method.invoke(documentService, byteArrayFist, byteArraySecund);
-		
-		
+
 		// verificação
 
 		assertThat(result).isEqualTo(-1);
+
+	}
+
+	@Order(8)
+	@Test
+	@DisplayName("Deve informar que documento right não foi encontrado")
+	public void DiffDocumentRightNotFound() {
+		// Cenário
+		Integer idFile = 1;
+		String message = String.format("Documento com Id: %s e lado: right não encontrado", idFile);
+
+		Mockito.when(documentRepository.findBySideAndIdFile(Mockito.anyString(), Mockito.anyInt()))
+				.thenReturn(Optional.empty());
+
+		// Execução
+		BisnessRuleExeption thrown = assertThrows(BisnessRuleExeption.class, () -> documentService.documentDiff(1));
+
+		// Verificação
+		assertThat(thrown.getMessage()).isEqualTo(message);
+
+	}
+
+	@SuppressWarnings("unchecked")
+	@Order(9)
+	@Test
+	@DisplayName("Deve informar que documento left não foi encontrado")
+	public void DiffDocumentLeftNotFound() {
+		// Cenário
+		Integer idFile = 1;
+		Document documentRight = new Document(1, 1, new byte[] { 23, 23, 44 }, "right");
+		String message = String.format("Documento com Id: %s e lado: left não encontrado", idFile);
+
+		Mockito.when(documentRepository.findBySideAndIdFile(Mockito.anyString(), Mockito.anyInt()))
+				.thenReturn(Optional.of(documentRight), Optional.empty());
+
+		// Execução
+		BisnessRuleExeption thrown = assertThrows(BisnessRuleExeption.class, () -> documentService.documentDiff(1));
+
+		// Verificação
+		assertThat(thrown.getMessage()).isEqualTo(message);
 
 	}
 

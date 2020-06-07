@@ -47,6 +47,7 @@ public class DocumentControllerTest {
 	@Test
 	@DisplayName("Deve criar documento Left")
 	public void createDocumentLeft() throws Exception {
+		//Cenário
 		Integer idFile = 1;
 		DocumentDTO newDocumentDto = new DocumentDTO(null, null, new byte[] { 10, 32, 44 }, null);
 
@@ -58,9 +59,10 @@ public class DocumentControllerTest {
 
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(DOCUMENT_API + idFile + "/left/")
 				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content(objectJason);
-
+		//Execução
 		mvc.perform(request).andExpect(status().isCreated()).andExpect(jsonPath("id").isNotEmpty())
 				.andExpect(jsonPath("file").isNotEmpty()).andExpect(jsonPath("side").value("left"));
+		//VErificação
 
 	}
 
