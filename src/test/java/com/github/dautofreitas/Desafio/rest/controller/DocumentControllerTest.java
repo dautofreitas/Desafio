@@ -23,12 +23,10 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dautofreitas.desafio.domain.entity.Document;
 import com.github.dautofreitas.desafio.rest.dto.DocumentDTO;
 import com.github.dautofreitas.desafio.service.DocumentService;
-import com.jayway.jsonpath.internal.function.text.Concatenate;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest
@@ -47,7 +45,8 @@ public class DocumentControllerTest {
 	@Test
 	@DisplayName("Deve criar documento Left")
 	public void createDocumentLeft() throws Exception {
-		//Cenário
+
+		// Cenário
 		Integer idFile = 1;
 		DocumentDTO newDocumentDto = new DocumentDTO(null, null, new byte[] { 10, 32, 44 }, null);
 
@@ -59,10 +58,13 @@ public class DocumentControllerTest {
 
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(DOCUMENT_API + idFile + "/left/")
 				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content(objectJason);
-		//Execução
-		mvc.perform(request).andExpect(status().isCreated()).andExpect(jsonPath("id").isNotEmpty())
+		// Execução
+
+		ResultActions result = mvc.perform(request);
+
+		// Verificação
+		result.andExpect(status().isCreated()).andExpect(jsonPath("id").isNotEmpty())
 				.andExpect(jsonPath("file").isNotEmpty()).andExpect(jsonPath("side").value("left"));
-		//VErificação
 
 	}
 
@@ -78,7 +80,9 @@ public class DocumentControllerTest {
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(DOCUMENT_API + idFile + "/left/")
 				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content(objectJason);
 
-		mvc.perform(request).andExpect(status().isBadRequest()).andExpect(jsonPath("type").value("erro"))
+		ResultActions result = mvc.perform(request);
+
+		result.andExpect(status().isBadRequest()).andExpect(jsonPath("type").value("erro"))
 				.andExpect(jsonPath("messages", hasItem("A propriedade file não pode ser nula")));
 
 	}
@@ -87,6 +91,7 @@ public class DocumentControllerTest {
 	@Test
 	@DisplayName("Deve criar documento Right")
 	public void createDocumentRight() throws Exception {
+		// Cenário
 		Integer idFile = 1;
 		DocumentDTO newDocumentDto = new DocumentDTO(null, null, new byte[] { 10, 32, 44 }, null);
 
@@ -99,7 +104,11 @@ public class DocumentControllerTest {
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(DOCUMENT_API + idFile + "/right/")
 				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content(objectJason);
 
-		mvc.perform(request).andExpect(status().isCreated()).andExpect(jsonPath("id").isNotEmpty())
+		// Execução
+		ResultActions result = mvc.perform(request);
+
+		// Verificação
+		result.andExpect(status().isCreated()).andExpect(jsonPath("id").isNotEmpty())
 				.andExpect(jsonPath("file").isNotEmpty()).andExpect(jsonPath("side").value("right"));
 
 	}
@@ -108,6 +117,7 @@ public class DocumentControllerTest {
 	@Test
 	@DisplayName("Não deve criar documento Right")
 	public void createIvalidDocumentRight() throws Exception {
+		// Cenário
 		Integer idFile = 1;
 		DocumentDTO newDocumentDto = new DocumentDTO();
 		String objectJason = new ObjectMapper().writeValueAsString(newDocumentDto);
@@ -115,33 +125,34 @@ public class DocumentControllerTest {
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(DOCUMENT_API + idFile + "/left/")
 				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content(objectJason);
 
-		mvc.perform(request).andExpect(status().isBadRequest()).andExpect(jsonPath("type").value("erro"))
+		// Execução
+		ResultActions result = mvc.perform(request);
+		
+		// Verificação
+		result.andExpect(status().isBadRequest()).andExpect(jsonPath("type").value("erro"))
 				.andExpect(jsonPath("messages", hasItem("A propriedade file não pode ser nula")));
 	}
 
 	@Order(6)
 	@Test
-	@DisplayName("Deve informar que tamanho dos documentos são diferentes")
+	@DisplayName("Deve informar que tamanho dos documentos são idênticos")
 	public void resultDiffDocumentEquals() throws Exception {
 
 		// Cenário
 		Integer idFile = 1;
 		String message = String.format("Documentos %s idênticos", idFile);
-		
-		BDDMockito.given(documentService.documentDiff(Mockito.any(Integer.class)))
-				.willReturn(message);
+
+		BDDMockito.given(documentService.documentDiff(Mockito.any(Integer.class))).willReturn(message);
 
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get(DOCUMENT_API + idFile);
-		
+
 		// Execução
 		ResultActions result = mvc.perform(request);
 
 		// Veriicação
-		result.andExpect(status().isOk())
-				.andExpect(jsonPath("type").value("success"))
+		result.andExpect(status().isOk()).andExpect(jsonPath("type").value("success"))
 				.andExpect(jsonPath("messages", hasItem(message)));
 	}
-
 
 	@Order(7)
 	@Test
@@ -151,21 +162,18 @@ public class DocumentControllerTest {
 		// Cenário
 		Integer idFile = 1;
 		String message = String.format("Documentos %s com tamanhos diferentes", idFile);
-		
-		BDDMockito.given(documentService.documentDiff(Mockito.any(Integer.class)))
-				.willReturn(message);
+
+		BDDMockito.given(documentService.documentDiff(Mockito.any(Integer.class))).willReturn(message);
 
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get(DOCUMENT_API + idFile);
-		
+
 		// Execução
 		ResultActions result = mvc.perform(request);
 
 		// Veriicação
-		result.andExpect(status().isOk())
-				.andExpect(jsonPath("type").value("success"))
+		result.andExpect(status().isOk()).andExpect(jsonPath("type").value("success"))
 				.andExpect(jsonPath("messages", hasItem(message)));
 	}
-	
 
 	@Order(8)
 	@Test
@@ -174,20 +182,18 @@ public class DocumentControllerTest {
 
 		// Cenário
 		Integer idFile = 1;
-		String message = String.format("Documentos %s diferentes na posição %s",idFile, 2);
-		
-		BDDMockito.given(documentService.documentDiff(Mockito.any(Integer.class)))
-				.willReturn(message);
+		String message = String.format("Documentos %s diferentes na posição %s", idFile, 2);
+
+		BDDMockito.given(documentService.documentDiff(Mockito.any(Integer.class))).willReturn(message);
 
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get(DOCUMENT_API + idFile);
-		
+
 		// Execução
 		ResultActions result = mvc.perform(request);
 
 		// Veriicação
-		result.andExpect(status().isOk())
-				.andExpect(jsonPath("type").value("success"))
+		result.andExpect(status().isOk()).andExpect(jsonPath("type").value("success"))
 				.andExpect(jsonPath("messages", hasItem(message)));
 	}
-	
+
 }

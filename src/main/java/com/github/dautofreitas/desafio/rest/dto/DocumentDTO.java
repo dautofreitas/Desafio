@@ -12,7 +12,7 @@ public class DocumentDTO {
 	
 	private Integer id;	
 	private Integer idFile;
-	@NotEmpty(message = "A propriedade file não pode ser nula")
+	@NotEmpty(message = "A propriedade file não pode ser nula")	
 	byte[] file;	
 	private String side;
 }

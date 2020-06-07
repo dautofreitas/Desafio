@@ -64,7 +64,7 @@ public class DocumentServiceTest {
 	public void notSaveDocument() {
 		
 		Document documentFound = new Document(null, 1, new byte[] { 23, 23, 44 }, "left");		
-		String message = String.format("Documento id: %s e lado: %s já existente", documentFound.getIdFile(), documentFound.getSide());
+		String message = String.format("Documento id: %s e lado: %s já se encontra cadastrado", documentFound.getIdFile(), documentFound.getSide());
 		
 		Mockito.when(documentRepository.findBySideAndIdFile(Mockito.anyString(), Mockito.anyInt()))
 				.thenReturn(Optional.of(documentFound));

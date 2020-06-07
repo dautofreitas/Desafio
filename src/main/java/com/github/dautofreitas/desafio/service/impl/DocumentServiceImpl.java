@@ -22,7 +22,7 @@ public class DocumentServiceImpl implements DocumentService {
 	public Document save(Document document) {
 		
 		documentRepository.findBySideAndIdFile(document.getSide(), document.getIdFile()).ifPresent(documentFound -> {
-			throw new BisnessRuleExeption(String.format("Documento id: %s e lado: %s já existente", documentFound.getIdFile(), documentFound.getSide()));
+			throw new BisnessRuleExeption(String.format("Documento id: %s e lado: %s já se encontra cadastrado", documentFound.getIdFile(), documentFound.getSide()));
 		});		
 		
 		return documentRepository.save(document);
