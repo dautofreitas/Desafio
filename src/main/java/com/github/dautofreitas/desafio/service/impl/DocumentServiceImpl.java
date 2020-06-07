@@ -12,8 +12,6 @@ public class DocumentServiceImpl implements DocumentService {
 
 	private DocumentRepository documentRepository;
 
-//	
-
 	public DocumentServiceImpl(DocumentRepository documentRepository) {
 
 		this.documentRepository = documentRepository;

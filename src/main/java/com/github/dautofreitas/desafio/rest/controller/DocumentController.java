@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.github.dautofreitas.desafio.domain.entity.Document;
+import com.github.dautofreitas.desafio.exception.BisnessRuleExeption;
 import com.github.dautofreitas.desafio.rest.controller.util.MessageApi;
 import com.github.dautofreitas.desafio.rest.dto.DocumentDTO;
 import com.github.dautofreitas.desafio.service.DocumentService;
@@ -62,10 +63,13 @@ public class DocumentController {
 	}
 	
 	@GetMapping("{idFile}")
-	public String  result(@PathVariable Integer idFile)
+	public MessageApi  result(@PathVariable Integer idFile)
 	{
 		
-		return documentService.documentDiff(idFile);
+		String result =  documentService.documentDiff(idFile);
+		List<String> messages = new ArrayList<String>(); 
+		messages.add(result);		
+		return new MessageApi("success",messages);
 		
 	}
 	
@@ -76,6 +80,15 @@ public class DocumentController {
 		List<String> messages = new ArrayList<String>(); 
 		exception.getBindingResult().getAllErrors().forEach( erro -> messages.add(erro.getDefaultMessage()));
 		
+		return new MessageApi("erro",messages);
+	}
+	
+	@ExceptionHandler(BisnessRuleExeption.class)
+	@ResponseStatus(code = HttpStatus.BAD_REQUEST)	
+	public MessageApi handleValidationExceptions(BisnessRuleExeption exception)
+	{
+		List<String> messages = new ArrayList<String>(); 
+		messages.add(exception.getMessage());		
 		return new MessageApi("erro",messages);
 	}
 	
